@@ -1,5 +1,7 @@
 // note: parts of this code are taken from Office Hours on 9/29 and 10/1
 
+
+// function to draw the bar graph
 function DrawBargraph(sampleId) {
     d3.json("samples.json").then((data) => {
 
@@ -14,7 +16,6 @@ function DrawBargraph(sampleId) {
         var barLayout = {
             title: "Top 10 Bacteria Cultures Found",
             margin: {t: 30, l: 150}
-
         }
 
         var barData = {
@@ -25,21 +26,44 @@ function DrawBargraph(sampleId) {
             orientation: "h"
         }
 
-
         Plotly.newPlot("bar", [barData], barLayout);
     });
 }
 
-
-
+// function to draw the bubble chart
 function DrawBubblechart(sampleId) {
     d3.json("samples.json").then((data) => {
 
+        var samples = data.samples;
+        var resultArray = samples.filter(x => x.id == sampleId);
+        var result = resultArray[0];
+        
+        var x_axis = result.otu_ids;
+        var y_axis = result.sample_values;
+        var size = result.sample_values;
+        var color = result.otu_ids;
+        var texts = result.otu_labels;
+            
+        var bubbleData = {
+        x: x_axis,
+        y: y_axis,
+        text: result.otu_labels,
+        mode: `markers`,
+        marker: {
+            size: result.sample_values,
+            color: result.otu_ids}
+        };;
+              
+        var layout = {
+        title: "Belly Button Bacteria",
+        xaxis: {title: "OTU ID"}
+        };
+
+        Plotly.newPlot("bubble", [bubbleData], layout);
     });
-    
 }
 
-
+// function to show demographics panel
 function ShowMetadata(sampleId) {
     d3.json("samples.json").then((data) => {
         var metadata = data.metadata;
@@ -47,7 +71,6 @@ function ShowMetadata(sampleId) {
         var results = resultArray[0];
         var panel = d3.select("#sample-metadata");
 
-        console.log(panel);
         panel.html("");
 
         Object.entries(results).forEach( ([key, value]) => {
@@ -58,16 +81,13 @@ function ShowMetadata(sampleId) {
     });
 }
 
-
+// When a new option is selected, recreate the graphs and the demographics panel
 function optionChanged(newSampleId){
     console.log(`User selected ${newSampleId}`)
     DrawBargraph(newSampleId);
-    DrawBubblechart(newSampleId);
     ShowMetadata(newSampleId);
-
+    DrawBubblechart(newSampleId);
 }
-
-
 
 // Initialize the page
 function initDashboard() {
@@ -86,10 +106,8 @@ function initDashboard() {
         console.log("starting sample: ", sampleId);
 
         DrawBargraph(sampleId);
-        DrawBubblechart(sampleId);
         ShowMetadata(sampleId);
-
-
+        DrawBubblechart(sampleId);
     });
 }
 
